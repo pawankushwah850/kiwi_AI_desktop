@@ -1,0 +1,192 @@
+
+import pyttsx3 as ptx
+import speech_recognition as sr 
+import random,os,re
+import datetime ,time as t
+import wikipedia
+import webbrowser
+from mutagen.mp3 import MP3
+import smtplib as smt
+voice=ptx.init()
+
+voice.setProperty('rate',120)
+
+def speak(audio):
+
+    voice.say(audio)
+    voice.runAndWait()
+    
+def wishUser():
+    hour=datetime.datetime.now().strftime('%H')
+    if int(hour) >= 12:
+        speak('Good Afternoon Sir')
+    
+    else:
+        speak("Good morning sir")
+
+    speak("i am kiwi ")    
+    speak('Which type may i help you.')
+    listen_voice()
+
+
+def listen_voice():
+    
+        r=sr.Recognizer()
+        while True:
+            try:
+                with sr.Microphone() as source:
+                    
+                    print("Listening.....")
+                    # wait for a second to let the recognizer 
+                    # adjust the energy threshold based on 
+                    # the surrounding noise level  
+                    r.adjust_for_ambient_noise(source, duration=0.2)
+
+                    audio=r.listen(source)
+
+                    MyText = r.recognize_google(audio,language='en-in') 
+                    command = MyText.lower() 
+            
+                    print("Did you say : "+command) 
+                    
+                    event_to_perform(command)
+
+            except sr.RequestError as e: 
+                print("Could not request results; {0}".format(e)) 
+
+            except sr.UnknownValueError: 
+                print("Please say that again :")
+
+
+def event_to_perform(Task):
+    
+    if 'play music' in Task:
+        """music dir"""
+
+        music_folder='E:\\MP3 Songs\\Music'
+
+        """get all music"""
+        play_list=os.listdir(music_folder)
+
+        """shuffle music"""
+        random.shuffle(play_list)
+    
+        for i in play_list:
+            """filter .mp3 files"""
+            if re.findall(r'\w+.mp3',i):
+                print(i)
+
+                """ getting audio  duration"""
+                audio=MP3(os.path.join(music_folder,i))
+
+                print("duration of music : ", audio.info.length)
+
+                """ playing music """
+                os.startfile(os.path.join(music_folder,i))
+
+                """wait until current music not finshed"""
+                t.sleep(audio.info.length)
+            else:
+                pass
+
+
+    elif 'open youtube' in Task:
+        """ opeing link"""
+
+        print("opening youtube....")
+        wc=webbrowser.get('chrome')
+        wc.open('https://www.Youtube.com')
+
+    elif 'open my youtube channal' in  Task:
+        print('Opening your Youtbe channal...')
+        webbrowser.open_new_tab('')
+
+    elif 'open google' in Task:
+        print('Opening your Google...')
+        webbrowser.open_new_tab('https://www.google.co.in')
+
+    elif 'open facebook' in Task:
+        print('Opening your facebook...')
+        webbrowser.open_new_tab('https://www.facebook.com/')
+
+    elif 'open whatsapp' in Task:
+        print("opening whatsapp")
+        webbrowser.open_new_tab('https://web.whatsapp.com/')
+
+    elif 'open instagram' in Task:
+        print('opening instagram')
+        webbrowser.open_new_tab('https://www.instagram.com/')
+
+    elif 'open browser' in Task:
+        print('opening crome browser')
+        os.startfile('C:\\Users\\Public\\Desktop\\Googlep')
+    
+    elif 'what is time' in Task:
+        """date time module """
+
+        time=datetime.datetime.now()
+        if int(time.strftime('%H')) <12:
+            print("Time Is now :"+time.strftime('%H %M')+' am')
+            speak("Time Is now "+str(time.strftime('%H %M'))+' am')
+        else:
+            print("Time Is now :"+time.strftime('%H %M'+' pm')+' pm')
+            speak("Time Is now "+str(time.strftime('%H %M'))+' pm')
+
+    elif 'send email' in Task:
+
+        speak('Please , write a email id of clint :')
+        reciver=input("enter a email id of reciever :")
+        speak('please say your message')
+
+        r=sr.Recognizer()
+        with sr.Microphone() as source:
+            
+            print("Listening  your mail.....")
+            # wait for a second to let the recognizer 
+            # adjust the energy threshold based on 
+            # the surrounding noise level  
+            r.adjust_for_ambient_noise(source, duration=0.2)
+
+            audio=r.listen(source)
+
+            MyText = r.recognize_google(audio,language='en-in') 
+            message= MyText.lower() 
+    
+            print("Did you say : "+message) 
+
+            server=smt.SMTP('smtp.gmail.com',587)
+            server.ehlo()
+            server.starttls()
+
+            try:
+                """ enter yoyr id password"""
+                server.login("python3community@gmail.com","6263376302")
+                server.sendmail('python3community@gmail.com',reciver,message)
+                print("email sent successfully")
+                speak("email sent successfully")
+            except:
+                speak("wrong email and password ! something went wrong")
+                print("wrong email and password")
+
+            
+            
+    elif 'wikipedia' in Task:
+
+        """ wikipedia search"""
+
+        print('Searching wikipedia....')
+        query=Task.replace('wikipedia','')
+        try:
+            result=wikipedia.summary(query,sentences=2)
+            print(result)
+            speak("According to wikipedia "+result)
+        except:
+            print("No result found:")
+            speak('No result found')
+    elif 'kiwi stop' in Task:
+        """ stop working kiwi """
+        speak("Thanking you sir, BYe BYE and takecare.")
+        exit()
+    
+if __name__=="__main__":
+    wishUser()
